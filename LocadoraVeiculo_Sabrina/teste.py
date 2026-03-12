@@ -42,3 +42,37 @@ try:
 except Exception as e:
     print("Erro:", e)
 
+print("\n--- TESTANDO O PADRÃO STATE RESTRITIVO ---")
+carro_estado = VeiculoFactory.criar_veiculo(tipo="carro", placa="HJI3K45", taxa_diaria=100.0, categoria=Categoria.ECONOMICO)
+
+# 1. Tentar alugar um carro de frota normal
+carro_estado.tentar_alugar() # OK - Transitará
+
+# 2. Tentar locar novamente para outro!
+carro_estado.tentar_alugar() # Erro Interativo ("Já está alugado!")
+
+# 3. Tentar mandar pra manutenção com cleinte
+carro_estado.reter_na_frota_pra_conserto() # Bloqueado
+
+# 4. Devolver 
+carro_estado.tentar_devolver() # Ok (Retorna)
+
+# 5. Colocar em checkups da empresa
+carro_estado.reter_na_frota_pra_conserto() # Ok 
+carro_estado.tentar_alugar() # Falha! Está em Manutenção.
+
+from model.decoradores import GPSDecorator, SeguroTerceirosDecorator
+# ... restantes das suas importações
+
+print("\n--- TESTANDO O PADRÃO DECORATOR ---")
+# 1. Base simples
+locacao_base = Locacao( veiculo=veiculo1, data_inicio=date(2026, 3, 1), data_fim=date(2026, 3, 5))
+print(f"Valor Base (somente Diária + Seguro Base): R$ {locacao_base.calcular_valor_locacao()}")
+
+# 2. Base + GPS
+locacao_com_gps = GPSDecorator(locacao_base)
+print(f"Valor somado do pacote + GPS: R$ {locacao_com_gps.calcular_valor_locacao()}")
+
+# 3. Empurrar SeguroTerceiros Por Cima De Tudo (Envelopamento)
+locacao_vip_top = SeguroTerceirosDecorator(locacao_com_gps)
+print(f"Valor pacote completão (Base + GPS + Seg.Terceiros): R$ {locacao_vip_top.calcular_valor_locacao()}")
